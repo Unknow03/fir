@@ -1,3 +1,5 @@
+### Forked to integrate FIR into the 3SP Stockpile tool
+
 # Foxhole Inventory Report (fir)
 
 This tool prepares [Foxhole](https://www.foxholegame.com/about-foxhole) stockpile screenshots into a visual report and machine-readable numbers.

@@ -38,7 +38,7 @@ export function registerDefaultListeners() {
   window.addEventListener('paste', function(event) {
     const files = event.clipboardData.files || [];
     const images = Array.prototype.filter.call(files, f => f.type.startsWith('image/'));
-    gtag('event', 'select_content', {content_type: 'paste_screenshots', item_id: `ss_count_${images.length}`});
+    //gtag('event', 'select_content', {content_type: 'paste_screenshots', item_id: `ss_count_${images.length}`});
     addImages(images);
   });
 }
@@ -59,14 +59,14 @@ export function addInputListener(input) {
       return a.lastModified - b.lastModified;
     });
 
-    gtag('event', 'select_content', {content_type: 'open_screenshots', item_id: `ss_count_${files.length}`});
+    //gtag('event', 'select_content', {content_type: 'open_screenshots', item_id: `ss_count_${files.length}`});
     addImages(files);
   });
 }
 
 export function addDownloadCollageListener(downloadCollage) {
   downloadCollage.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_collage'});
+    //gtag('event', 'select_content', {content_type: 'download', item_id: 'download_collage'});
     const collage = document.querySelector('div.render');
     html2canvas(collage, {
       width: collage.scrollWidth,
@@ -89,7 +89,7 @@ export function addDownloadCollageListener(downloadCollage) {
 
 export function addDownloadTotalsListener(downloadTotals) {
   downloadTotals.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_totals'});
+    //gtag('event', 'select_content', {content_type: 'download', item_id: 'download_totals'});
     const totals = document.querySelector('div.report');
     html2canvas(totals, {
       width: totals.scrollWidth,
@@ -112,7 +112,7 @@ export function addDownloadTotalsListener(downloadTotals) {
 
 export function addDownloadTSVListener(downloadTSV) {
   downloadTSV.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_tsv'});
+    //gtag('event', 'select_content', {content_type: 'download', item_id: 'download_tsv'});
     const items = [[
       'Stockpile Title',
       'Stockpile Name',
@@ -266,7 +266,7 @@ export function getAppendGoogleRows(format="gapi") {
 
 export async function addAppendGoogleListener(appendGoogle) {
   appendGoogle.addEventListener('click', async function() {
-    gtag('event', 'select_content', {content_type: 'append_google', item_id: 'append_google'});
+    //gtag('event', 'select_content', {content_type: 'append_google', item_id: 'append_google'});
 
     const authPromise = new Promise(function(resolve, reject) {
       tokenClient.callback = (resp) => {
@@ -394,8 +394,8 @@ export async function addAppendGoogleListener(appendGoogle) {
   });
 }
 
-function addImages(files) {
-  imagesTotal += files.length;
+export function addImages(files, addTotal = true) {
+  if(addTotal) imagesTotal += files.length;
 
   const collage = document.querySelector('div.render');
   document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
@@ -456,9 +456,10 @@ function getProcessImage(label, lastModified) {
       stockpile.lastModified = lastModified;
       stockpiles.push(stockpile);
     }
-
+    let addProcc = processStockpile(stockpile, canvas, label);
+    if(addProcc) ++imagesProcessed;
     this.style.display = '';
-    ++imagesProcessed;
+    
     document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
 
     if (imagesProcessed == imagesTotal) {
