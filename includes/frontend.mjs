@@ -7,6 +7,8 @@ let QUANTITY_MODEL_URL = "";
 let stockpiles = [];
 let imagesProcessed = 0;
 let imagesTotal = 0;
+let totalImagesProcessed = 0;
+let totalImagesTotal = 0;
 
 export async function init(resources, icon_model_url, quantity_model_url) {
   res = resources;
@@ -395,10 +397,11 @@ export async function addAppendGoogleListener(appendGoogle) {
 }
 
 export function addImages(files, addTotal = true) {
-  if(addTotal) imagesTotal += files.length;
+  if(addTotal) totalImagesTotal += files.length;
+  imagesTotal += files.length;
 
   const collage = document.querySelector('div.render');
-  document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+  document.querySelector('li span').textContent = totalImagesProcessed + " of " + totalImagesTotal;
 
   files.forEach(function(file) {
     const container = document.createElement('div');
@@ -434,6 +437,10 @@ function gIds() {
   };
 }
 
+export function isAllowedToTakeScreenshot() {
+  console.log("Checking allowed: imagesProcessed: " + imagesProcessed + " imagesTotal: " + imagesTotal);
+  return !((imagesTotal - imagesProcessed) >= 1);
+}
 function getProcessImage(label, lastModified) {
   return function() {
     return processImage.call(this, label, lastModified);
@@ -450,6 +457,7 @@ function getProcessImage(label, lastModified) {
     context.drawImage(this, 0, 0);
 
     const stockpile = await Screenshot.process(canvas, ICON_MODEL_URL, res.ICON_CLASS_NAMES, QUANTITY_MODEL_URL, res.QUANTITY_CLASS_NAMES);
+    console.log("Processed " + label.textContent + "    " + imagesProcessed + " of " + imagesTotal);
     if (stockpile) {
       this.src = stockpile.box.canvas.toDataURL();
       stockpile.label = label;
@@ -457,10 +465,11 @@ function getProcessImage(label, lastModified) {
       stockpiles.push(stockpile);
     }
     let addProcc = processStockpile(stockpile, canvas, label);
-    if(addProcc) ++imagesProcessed;
+    if(addProcc) ++totalImagesProcessed;
+    ++imagesProcessed;
     this.style.display = '';
     
-    document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+    document.querySelector('li span').textContent = totalImagesProcessed + " of " + totalImagesTotal;
 
     if (imagesProcessed == imagesTotal) {
       window.stockpiles = stockpiles;
