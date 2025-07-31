@@ -9,7 +9,7 @@ then
 fi
 
 warLocation=$(cd "${1}"; pwd)
-version='infantry-59'
+version='infantry-61'
 
 parseCatalog() {
   echo "Parsing catalog. (downloading / updating npm packages)"
@@ -29,11 +29,6 @@ generateIconTraining() {
   cpus=$(nproc)
   rangeMax=$(expr ${cpus} - 1)
   seq 0 $rangeMax | xargs -I@ -n1 -P$cpus node generate_training.js "${warLocation}" ../foxhole/${version}/catalog.json training @ $cpus
-
-  # Textured Icons mod uses the same icon for both FieldMGAmmo and MGAmmo. This
-  # confuses the model, and the icon looks more like MGAmmo, so ignore the
-  # FieldMGAmmo icon.
-  rm training/FieldMGAmmo*/textured-icons-*.png || true
 
   ./find-duplicates.sh $cpus
 
@@ -88,7 +83,11 @@ buildClassifier() {
 
   #pipenv run python train.py 16 grayscale 0.05 0.05 quantity_training
 
-  pipenv run tensorflowjs_converter --input_format tf_saved_model --output_format=tfjs_graph_model model-tf ../foxhole/${version}/classifier
+  cd convert
+  pipenv clean
+  pipenv install
+  pipenv run tensorflowjs_converter --input_format tf_saved_model --output_format=tfjs_graph_model ../model-tf ../../foxhole/${version}/classifier
+  cd ..
 
   pipenv run python sort_json.py ../foxhole/${version}/classifier/model.json
 
